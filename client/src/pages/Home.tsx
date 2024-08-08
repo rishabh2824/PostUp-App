@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
+import { AuthContext } from "../helpers/AuthContext";
 
 interface Like {
     id: number;
@@ -8,34 +10,39 @@ interface Like {
     UserId: number;
 }
 
-// Define the type for a post
 interface Post {
     id: number;
     title: string;
     postText: string;
     username: string;
     Likes: Like[];
+    isLiked: boolean;
 }
 
 function Home() {
-    // Type the state with Post array
     const [listOfPosts, setListOfPosts] = useState<Post[]>([]);
+    const { authState } = useContext(AuthContext);
     let navigate = useNavigate();
 
     useEffect(() => {
-        axios.get<Post[]>("http://localhost:3001/posts")
-            .then((response) => {
-                setListOfPosts(response.data);
+        if (!authState.status) {
+            navigate("/login");
+        } else {
+            axios.get<{ listOfPosts: Post[]; userId: number }>("http://localhost:3001/posts", {
+                headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
             })
-            .catch((error) => {
-                console.error("Error fetching posts:", error);
-            });
-    }, []);
+                .then((response) => {
+                    setListOfPosts(response.data.listOfPosts);
+                })
+                .catch((error) => {
+                    console.error("Error fetching posts:", error);
+                });
+        }
+    }, [authState.status, navigate]);
 
     const likeAPost = (postId: number) => {
         const token = localStorage.getItem("accessToken");
-        console.log("Access token:", token);
-    
+
         axios
             .post(
                 "http://localhost:3001/likes",
@@ -43,32 +50,25 @@ function Home() {
                 { headers: { Authorization: `Bearer ${token}` } }
             )
             .then((response) => {
-                if (response.data.liked) {
-                    setListOfPosts(
-                        listOfPosts.map((post) => {
-                            if (post.id === postId) {
-                                return { ...post, Likes: [...post.Likes, { id: response.data.likeId, PostId: postId, UserId: response.data.userId }] };
-                            } else {
-                                return post;
-                            }
-                        })
-                    );
-                } else {
-                    setListOfPosts(
-                        listOfPosts.map((post) => {
-                            if (post.id === postId) {
-                                return { ...post, Likes: post.Likes.filter((like) => like.id !== response.data.likeId) };
-                            } else {
-                                return post;
-                            }
-                        })
-                    );
-                }
+                const { liked, likes } = response.data;
+                setListOfPosts(
+                    listOfPosts.map((post) => {
+                        if (post.id === postId) {
+                            return {
+                                ...post,
+                                Likes: likes,
+                                isLiked: liked,
+                            };
+                        } else {
+                            return post;
+                        }
+                    })
+                );
             })
             .catch((error) => {
                 console.error("Error liking post:", error);
             });
-    };    
+    };
 
     return (
         <div>
@@ -77,17 +77,16 @@ function Home() {
                     <div className="title">{value.title}</div>
                     <div className="body" onClick={() => navigate(`/post/${value.id}`)}>{value.postText}</div>
                     <div className="footer">
-                        {value.username}{" "}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation(); // Prevent navigating to post page when clicking the like button
-                                likeAPost(value.id);
-                            }}
-                        >
-                            {" "}
-                            Like
-                        </button>
-                        <label> {value.Likes.length} </label>
+                        <div className="username">{value.username}</div>
+                        <div className="buttons">
+                            <ThumbUpAltIcon
+                                onClick={() => {
+                                    likeAPost(value.id);
+                                }}
+                                className={value.isLiked ? "unlikeBttn" : "likeBttn"}
+                            />
+                            <label> {value.Likes.length} </label>
+                        </div>
                     </div>
                 </div>
             ))}

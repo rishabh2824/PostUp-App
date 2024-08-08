@@ -8,6 +8,8 @@ import Post from "./pages/Post";
 import Login from "./pages/Login";
 import Registration from "./pages/Registration";
 import { AuthContext } from "./helpers/AuthContext";
+import PageNotFound from "./pages/PageNotFound";
+import ProtectedRoute from "./pages/ProtectedRoute";  // Import the new ProtectedRoute component
 
 const App: React.FC = () => {
     const [authState, setAuthState] = useState({ username: "", id: 0, status: false });
@@ -65,11 +67,12 @@ const App: React.FC = () => {
                         )}
                     </nav>
                     <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/createpost" element={<CreatePost />} />
+                        <Route path="/" element={<ProtectedRoute element={<Home />} />} />
+                        <Route path="/createpost" element={<ProtectedRoute element={<CreatePost />} />} />
                         <Route path="/post/:id" element={<Post />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/registration" element={<Registration />} />
+                        <Route path="*" element={<PageNotFound />} />
                     </Routes>
                 </Router>
             </AuthContext.Provider>

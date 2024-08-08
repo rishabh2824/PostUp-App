@@ -22,9 +22,7 @@ const validateToken = (req, res, next) => {
         req.user = validToken;
         console.log("Valid Token:", validToken);
 
-        if (validToken) {
-            return next();
-        }
+        return next();
     } catch (err) {
         console.log("Token validation error:", err.message);
         return res.status(403).json({ error: "Token is not valid" });
