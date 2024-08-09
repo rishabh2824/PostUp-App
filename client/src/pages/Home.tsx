@@ -6,8 +6,8 @@ import { AuthContext } from "../helpers/AuthContext";
 
 interface Like {
     id: number;
-    PostId: number;
-    UserId: number;
+    postId: number;
+    userId: number;
 }
 
 interface Post {
@@ -46,7 +46,7 @@ function Home() {
         axios
             .post(
                 "http://localhost:3001/likes",
-                { PostId: postId },
+                { postId: postId },
                 { headers: { Authorization: `Bearer ${token}` } }
             )
             .then((response) => {

@@ -28,7 +28,7 @@ const Registration: React.FC = () => {
                 alert(response.data.error);
             } else {
                 alert("Registration successful!");
-                navigate("/login"); // Navigate to the login page after successful registration
+                navigate("/login");
             }
         }).catch((error) => {
             console.error("There was an error during registration!", error);

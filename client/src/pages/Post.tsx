@@ -2,8 +2,10 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../helpers/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface Post {
+    id: number
     title: string;
     postText: string;
     username: string;
@@ -22,33 +24,47 @@ const Post: React.FC = () => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState<string>("");
     const { authState } = useContext(AuthContext);
+    let navigate = useNavigate();
 
     useEffect(() => {
-        console.log("Fetching post and comments data...");
-        
-        axios.get(`http://localhost:3001/posts/byId/${id}`).then((response) => {
+        if (!id) {
+            console.error("Post ID is undefined");
+            return;
+        }
+
+        const token = localStorage.getItem("accessToken");
+
+        axios.get(`http://localhost:3001/posts/byId/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        }).then((response) => {
             setPostObject(response.data);
         }).catch((error) => {
             console.error("Error fetching post data:", error);
         });
 
-        axios.get(`http://localhost:3001/comments/${id}`).then((response) => {
-            console.log("Fetched comments data:", response.data);
+        fetchComments();
+    }, [id]);
+
+    const fetchComments = () => {
+        const token = localStorage.getItem("accessToken");
+
+        axios.get(`http://localhost:3001/comments/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        }).then((response) => {
             setComments(response.data);
         }).catch((error) => {
             console.error("Error fetching comments:", error);
         });
-    }, [id]);
+    };
 
     const addComment = () => {
-        if (newComment.trim() === "") return;
+        if (newComment.trim() === "" || !id) return;
 
         const token = localStorage.getItem("accessToken");
-
-        if (!id) {
-            console.error("Post ID is undefined");
-            return;
-        }
 
         axios.post("http://localhost:3001/comments", {
             commentBody: newComment,
@@ -62,14 +78,7 @@ const Post: React.FC = () => {
                 if (response.data.error) {
                     console.log(response.data.error);
                 } else {
-                    const commentToAdd = {
-                        id: response.data.id,
-                        postId: parseInt(id, 10),
-                        commentBody: newComment,
-                        username: response.data.username,
-                    };
-                    console.log("Added comment:", commentToAdd);
-                    setComments([...comments, commentToAdd]);
+                    fetchComments(); // Fetch all comments after adding a new one
                     setNewComment("");
                 }
             })
@@ -79,28 +88,39 @@ const Post: React.FC = () => {
     };
 
     const deleteComment = (commentId: number) => {
-        if (commentId === undefined) {
+        if (!commentId) {
             console.error("Comment ID is undefined");
             return;
         }
-        console.log(`Deleting comment with ID: ${commentId}`);
+
+        const token = localStorage.getItem("accessToken");
+
         axios
-          .delete(`http://localhost:3001/comments/${commentId}`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
-          })
-          .then(() => {
-            setComments(
-              comments.filter((comment) => comment.id !== commentId)
-            );
-          })
-          .catch((error) => {
-            console.error("Error deleting comment:", error);
-          });
-      };
+            .delete(`http://localhost:3001/comments/${commentId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            .then(() => {
+                fetchComments(); // Fetch all comments after deletion
+            })
+            .catch((error) => {
+                console.error("Error deleting comment:", error);
+            });
+    };
 
     if (!postObject) {
         return <div>Loading...</div>;
     }
+
+    const deletePost = (id: number) => {
+        const token = localStorage.getItem("accessToken");
+        axios
+            .delete(`http://localhost:3001/posts/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            .then(() => {
+                navigate("/")
+            });
+    };
 
     return (
         <div className="postPage">
@@ -108,7 +128,13 @@ const Post: React.FC = () => {
                 <div className="post" id="individual">
                     <div className="title"> {postObject.title} </div>
                     <div className="body">{postObject.postText}</div>
-                    <div className="footer">{postObject.username}</div>
+                    <div className="footer">
+                        {postObject.username}
+                        {authState.username === postObject.username && (
+                            <button onClick={() => {deletePost(postObject.id);}}>
+                                 Delete Post </button>
+                        )}
+                    </div>
                 </div>
             </div>
             <div className="rightSide">
@@ -129,10 +155,7 @@ const Post: React.FC = () => {
                             <label> Username: {comment.username}</label>
                             {authState.username === comment.username && (
                                 <button
-                                    onClick={() => {
-                                        console.log(`Comment ID in button: ${comment.id}`);
-                                        deleteComment(comment.id);
-                                    }}
+                                    onClick={() => deleteComment(comment.id)}
                                 >
                                     X
                                 </button>

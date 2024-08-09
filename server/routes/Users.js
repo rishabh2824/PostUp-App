@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Users } = require("../models");
+const { User } = require("../models");
 const bcrypt = require("bcrypt");
 const { sign } = require("jsonwebtoken");
 const { validateToken } = require("../middlewares/AuthMiddleware");
@@ -10,13 +10,13 @@ router.post("/register", async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const userExists = await Users.findOne({ where: { username } });
+        const userExists = await User.findOne({ where: { username } });
         if (userExists) {
             return res.status(400).json({ error: "User already exists" });
         }
 
         const hash = await bcrypt.hash(password, 10);
-        await Users.create({
+        await User.create({
             username: username,
             password: hash,
         });
@@ -32,7 +32,7 @@ router.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const user = await Users.findOne({ where: { username } });
+        const user = await User.findOne({ where: { username } });
         if (!user) {
             return res.status(400).json({ error: "User doesn't exist" });
         }

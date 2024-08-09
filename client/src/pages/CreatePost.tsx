@@ -18,7 +18,7 @@ function CreatePost() {
     const initialValues: FormValues = {
         title: "",
         postText: "",
-        username: authState.username, // Automatically set the username
+        username: authState.username,
     };
 
     useEffect(() => {

@@ -9,10 +9,10 @@ import Login from "./pages/Login";
 import Registration from "./pages/Registration";
 import { AuthContext } from "./helpers/AuthContext";
 import PageNotFound from "./pages/PageNotFound";
-import ProtectedRoute from "./pages/ProtectedRoute";  // Import the new ProtectedRoute component
+import ProtectedRoute from "./pages/ProtectedRoute";
 
 const App: React.FC = () => {
-    const [authState, setAuthState] = useState({ username: "", id: 0, status: false });
+    const [authState, setAuthState] = useState({ username: "", id: 0, status: false, isLoading: true });
 
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
@@ -25,24 +25,30 @@ const App: React.FC = () => {
             })
             .then((response) => {
                 if (response.data.error) {
-                    setAuthState({ ...authState, status: false });
+                    setAuthState({ username: "", id: 0, status: false, isLoading: false });
                 } else {
                     setAuthState({
                         username: response.data.username,
                         id: response.data.id,
                         status: true,
+                        isLoading: false,
                     });
                 }
             })
             .catch((error) => {
                 console.log("Auth request error:", error.message);
+                setAuthState({ username: "", id: 0, status: false, isLoading: false });
             });
     }, []);
 
     const logout = () => {
         localStorage.removeItem("accessToken");
-        setAuthState({ username: "", id: 0, status: false });
+        setAuthState({ username: "", id: 0, status: false, isLoading: false });
     };
+
+    if (authState.isLoading) {
+        return <div>Loading...</div>; // Show loading indicator while checking auth status
+    }
 
     return (
         <div className="App">
@@ -78,6 +84,6 @@ const App: React.FC = () => {
             </AuthContext.Provider>
         </div>
     );
-}
+};
 
 export default App;
