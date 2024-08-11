@@ -10,6 +10,7 @@ import Registration from "./pages/Registration";
 import { AuthContext } from "./helpers/AuthContext";
 import PageNotFound from "./pages/PageNotFound";
 import ProtectedRoute from "./pages/ProtectedRoute";
+import Profile from "./pages/Profile";
 
 const App: React.FC = () => {
     const [authState, setAuthState] = useState({ username: "", id: 0, status: false, isLoading: true });
@@ -78,6 +79,7 @@ const App: React.FC = () => {
                         <Route path="/post/:id" element={<Post />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/registration" element={<Registration />} />
+                        <Route path="/profile/:id" element={<Profile />} />
                         <Route path="*" element={<PageNotFound />} />
                     </Routes>
                 </Router>

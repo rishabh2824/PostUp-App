@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import { AuthContext } from "../helpers/AuthContext";
+import { Link } from "react-router-dom";
 
 interface Like {
     id: number;
@@ -11,6 +12,7 @@ interface Like {
 }
 
 interface Post {
+    userId: number;
     id: number;
     title: string;
     postText: string;
@@ -77,7 +79,9 @@ function Home() {
                     <div className="title">{value.title}</div>
                     <div className="body" onClick={() => navigate(`/post/${value.id}`)}>{value.postText}</div>
                     <div className="footer">
-                        <div className="username">{value.username}</div>
+                        <div className="username">
+                        <Link to={`/profile/${value.userId}`}>{value.username}</Link>
+                        </div>
                         <div className="buttons">
                             <ThumbUpAltIcon
                                 onClick={() => {

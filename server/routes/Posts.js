@@ -7,7 +7,7 @@ router.get("/", validateToken, async (req, res) => {
     const userId = req.user.id;
     try {
         const listOfPosts = await Post.findAll({ include: [Like] });
-        
+
         const updatedPosts = listOfPosts.map(post => {
             return {
                 ...post.dataValues,
@@ -36,17 +36,27 @@ router.get("/byId/:id", validateToken, async (req, res) => {
     }
 });
 
+router.get("/byuserId/:id", async (req, res) => {
+    const id = req.params.id;
+    const listOfPosts = await Post.findAll({
+        where: { userId: id },
+        include: [Like], 
+    });
+    res.json(listOfPosts);
+});
+
+
 router.post("/", validateToken, async (req, res) => {
     try {
-      const post = req.body;
-      post.userId = req.user.id;  // Updated to match the model field name
-      const newPost = await Post.create(post);
-      res.json(newPost);
+        const post = req.body;
+        post.userId = req.user.id;
+        const newPost = await Post.create(post);
+        res.json(newPost);
     } catch (error) {
-      console.error("Error creating post:", error);
-      res.status(500).json({ error: "Failed to create post" });
+        console.error("Error creating post:", error);
+        res.status(500).json({ error: "Failed to create post" });
     }
-  });  
+});
 
 router.delete("/:postId", validateToken, async (req, res) => {
     const postId = req.params.postId;
@@ -55,7 +65,7 @@ router.delete("/:postId", validateToken, async (req, res) => {
     try {
         // Find the post by its ID
         const post = await Post.findOne({ where: { id: postId } });
-        
+
         // Check if the post exists and if the user is authorized to delete it
         if (post && post.userId === userId) {
             await Post.destroy({ where: { id: postId } });
