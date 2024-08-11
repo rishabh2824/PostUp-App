@@ -40,7 +40,7 @@ router.get("/byuserId/:id", async (req, res) => {
     const id = req.params.id;
     const listOfPosts = await Post.findAll({
         where: { userId: id },
-        include: [Like], 
+        include: [Like],
     });
     res.json(listOfPosts);
 });
@@ -56,6 +56,18 @@ router.post("/", validateToken, async (req, res) => {
         console.error("Error creating post:", error);
         res.status(500).json({ error: "Failed to create post" });
     }
+});
+
+router.put("/title", validateToken, async (req, res) => {
+    const { newTitle, id } = req.body;
+    await Post.update({ title: newTitle }, { where: { id: id } });
+    res.json(newTitle);
+});
+
+router.put("/postText", validateToken, async (req, res) => {
+    const { newText, id } = req.body;
+    await Post.update({ postText: newText }, { where: { id: id } });
+    res.json(newText);
 });
 
 router.delete("/:postId", validateToken, async (req, res) => {

@@ -122,17 +122,73 @@ const Post: React.FC = () => {
             });
     };
 
+    const editPost = (option: string) => {
+        const token = localStorage.getItem("accessToken");
+        if (option === "title") {
+            let newTitle = prompt("Enter New Title:");
+            if (newTitle !== null && newTitle.trim() !== "") {
+                axios.put(
+                    "http://localhost:3001/posts/title",
+                    {
+                        newTitle: newTitle,
+                        id: id,
+                    },
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+    
+                setPostObject({ ...postObject, title: newTitle });
+            }
+
+        } else {
+            let newPostText = prompt("Enter New Text:");
+            if (newPostText !== null && newPostText.trim() !== "") {
+                axios.put(
+                    "http://localhost:3001/posts/postText",
+                    {
+                        newText: newPostText,
+                        id: id,
+                    },
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+    
+                setPostObject({ ...postObject, postText: newPostText });
+            }
+        }
+    };
+
     return (
         <div className="postPage">
             <div className="leftSide">
                 <div className="post" id="individual">
-                    <div className="title"> {postObject.title} </div>
-                    <div className="body">{postObject.postText}</div>
+                    <div
+                        className="title"
+                        onClick={() => {
+                            if (authState.username === postObject.username) {
+                                editPost("title");
+                            }
+                        }}
+                    >
+                        {postObject.title}
+                    </div>
+                    <div
+                        className="body"
+                        onClick={() => {
+                            if (authState.username === postObject.username) {
+                                editPost("body");
+                            }
+                        }}
+                    >
+                        {postObject.postText}
+                    </div>
                     <div className="footer">
                         {postObject.username}
                         {authState.username === postObject.username && (
-                            <button onClick={() => {deletePost(postObject.id);}}>
-                                 Delete Post </button>
+                            <button onClick={() => { deletePost(postObject.id); }}>
+                                Delete Post </button>
                         )}
                     </div>
                 </div>

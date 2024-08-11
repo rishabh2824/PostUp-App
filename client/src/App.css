@@ -152,8 +152,9 @@ span {
     align-items: center;
 }
 
-.navbar .user-info {
+.navbar .loggedInContainer {
     display: flex;
+    justify-content: flex-end;
     align-items: center;
 }
 
@@ -169,14 +170,13 @@ span {
     border-radius: 5px;
 }
 
-.navbar a:hover, .navbar button:hover {
-    background-color: lightblue;
+.navbar .user-info {
+    display: flex;
+    align-items: center;
 }
 
-.navbar .loggedInContainer {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+.navbar a:hover, .navbar button:hover {
+    background-color: lightblue;
 }
 
 .navbar .username {
@@ -294,4 +294,16 @@ button {
 
 .loginContainer input {
     border: 2px solid dodgerblue;
+}
+
+/* HOMEPAGE */
+.post .footer .username a {
+    color: white; 
+    text-decoration: none;
+    font-weight: bold; 
+}
+
+.post .footer .username a:hover {
+    text-decoration: underline;
+    color: lightblue; 
 }
