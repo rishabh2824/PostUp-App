@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { AuthContext } from "../helpers/AuthContext";
 
 const Profile: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [username, setUsername] = useState<string>("");
-    const [listOfPosts, setListOfPosts] = useState<any[]>([]); // Adjust type according to your post structure
+    const [listOfPosts, setListOfPosts] = useState<any[]>([]);
+    const { authState } = useContext(AuthContext);
 
     useEffect(() => {
         // Fetch user basic info
@@ -32,6 +34,16 @@ const Profile: React.FC = () => {
         <div className="profilePageContainer">
             <div className="basicInfo">
                 <h1> Username: {username} </h1>
+                {authState.username === username && (
+          <button
+            onClick={() => {
+              navigate("/changepassword");
+            }}
+          >
+            {" "}
+            Change My Password
+          </button>
+        )}
             </div>
             <div className="listOfPosts">
                 {listOfPosts.map((post, index) => (
@@ -48,7 +60,7 @@ const Profile: React.FC = () => {
                         <div className="footer">
                             <div className="username">{post.username}</div>
                             <div className="buttons">
-                                <label> {post.Likes?.length || 0}</label> {/* Handle possible undefined Likes */}
+                                <label> {post.Likes?.length || 0}</label>
                             </div>
                         </div>
                     </div>
